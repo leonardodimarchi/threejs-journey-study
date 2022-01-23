@@ -11,7 +11,7 @@ scene.add(boxMesh);
 const cameraSizeInPixels = {
     width: 800,
     height: 600,
-}
+};
 
 const fieldOfViewInDegrees = 75;
 const aspectRatio = cameraSizeInPixels.width / cameraSizeInPixels.height;
@@ -26,7 +26,7 @@ const canvasElement = document.getElementById('myCanvas');
 
 const renderer = new THREE.WebGLRenderer({
     canvas: canvasElement,
-})
+});
 
 renderer.setSize(cameraSizeInPixels.width, cameraSizeInPixels.height);
 renderer.render(scene, camera);
