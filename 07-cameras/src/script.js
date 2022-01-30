@@ -1,15 +1,16 @@
 import './style.css'
 import * as THREE from 'three'
+import { MapControls, OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 // Cursor
-const cursor = {
-    x: 0,
-    y: 0,
-}
-window.addEventListener('mousemove', (event) => {
-    cursor.x = event.clientX / sizes.width - 0.5;
-    cursor.y = -(event.clientY / sizes.height - 0.5);
-})
+// const cursor = {
+//     x: 0,
+//     y: 0,
+// }
+// window.addEventListener('mousemove', (event) => {
+//     cursor.x = event.clientX / sizes.width - 0.5;
+//     cursor.y = -(event.clientY / sizes.height - 0.5);
+// })
 
 /**
  * Base
@@ -40,6 +41,10 @@ camera.position.z = 3
 camera.lookAt(mesh.position)
 scene.add(camera)
 
+// Controls
+const control = new OrbitControls(camera, canvas);
+control.enableDamping = true;
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -52,11 +57,13 @@ const tick = () =>
     renderer.render(scene, camera)
 
     // Updating the camera
-    camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 3;
-    camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 3;
-    camera.position.y = cursor.y * 5;
+    // camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 2;
+    // camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 2;
+    // camera.position.y = cursor.y * 5;
+    // camera.lookAt(mesh.position);
 
-    camera.lookAt(mesh.position);
+    // Updating control
+    control.update(); // Update the control every frame to work with damping
 
     // Call tick again on the next frame
     window.requestAnimationFrame(tick)
