@@ -1,6 +1,6 @@
 import './style.css'
 import * as THREE from 'three'
-import { MapControls, OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { _SRGBAFormat } from 'three'
 
 // Cursor
