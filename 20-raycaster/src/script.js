@@ -38,6 +38,38 @@ object3.position.x = 2
 scene.add(object1, object2, object3)
 
 /**
+ * Raycaster
+ */
+const raycaster = new THREE.Raycaster()
+
+// const rayOrigin = new THREE.Vector3(-3, 0, 0)
+// const rayDirection = new THREE.Vector3(10, 0, 0)
+
+// rayDirection.normalize() // Normalize while keeping the direction
+
+// raycaster.set(rayOrigin, rayDirection)
+
+// const intersectWithObject1 = raycaster.intersectObject(object2)
+// const intersectsObjects = raycaster.intersectObjects([object1, object2, object3])
+
+// console.log(intersectWithObject1, intersectsObjects)
+
+/**
+ * Mouse
+ */
+const mouse = new THREE.Vector2()
+
+window.addEventListener('mousemove', (event) => {
+    mouse.x = event.clientX / sizes.width * 2 - 1 // -1 to +1
+    mouse.y = - (event.clientY / sizes.height * 2 - 1) // -1 to +1 (-1 at the bottom and +1 at the top)
+})
+
+window.addEventListener('click', () => {
+    if (currentHoverIntersect)
+        console.log('clicking on a sphere')
+})
+
+/**
  * Sizes
  */
 const sizes = {
@@ -45,8 +77,7 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -85,10 +116,62 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  * Animate
  */
 const clock = new THREE.Clock()
+let currentHoverIntersect = null
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    // Animate objects
+    object1.position.y = Math.sin(elapsedTime * 1) * 1.5
+    object2.position.y = Math.sin(elapsedTime * 1.2) * 1.5
+    object3.position.y = Math.sin(elapsedTime * 1.3) * 1.5
+
+    raycaster.setFromCamera(mouse, camera)
+
+    const objects = [object1, object2, object3]
+
+    const intersects = raycaster.intersectObjects(objects)
+
+    for (const object of objects) {
+        object.material.color.set('red')
+    }
+
+    for (const intersect of intersects) {
+        intersect.object.material.color.set('blue')
+    }
+
+    if (intersects.length) {
+        if (!currentHoverIntersect)
+            console.log('Mouse enter')
+
+        currentHoverIntersect = intersects[0]
+    } else {
+        if (currentHoverIntersect)
+            console.log('Mouse leave')
+
+        currentHoverIntersect = null
+    }
+    
+        
+
+    // const rayOrigin = new THREE.Vector3(-3, 0, 0)
+    // const rayDirection = new THREE.Vector3(1, 0, 0)
+
+    // rayDirection.normalize() // Normalize while keeping the direction
+
+    // raycaster.set(rayOrigin, rayDirection)
+
+    // const objects = [object1, object2, object3]
+
+    // const intersects = raycaster.intersectObjects(objects)
+
+    // for (const object of objects) {
+    //     object.material.color.set('red')
+    // }
+
+    // for (const intersect of intersects) {
+    //     intersect.object.material.color.set('blue')
+    // }
 
     // Update controls
     controls.update()
