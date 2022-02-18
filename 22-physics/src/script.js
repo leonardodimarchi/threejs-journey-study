@@ -11,7 +11,7 @@ import { generateUUID } from 'three/src/math/mathutils'
 const gui = new dat.GUI()
 const debugObject = {
     createSphere: () => createSphere(
-       Math.random() * 0.5,
+        Math.random() * 0.5,
         {
             x: (Math.random() - 0.5) * 3,
             y: 3,
@@ -22,16 +22,27 @@ const debugObject = {
         Math.random(),
         Math.random(),
         Math.random(),
-         {
-             x: (Math.random() - 0.5) * 3,
-             y: 3,
-             z: (Math.random() - 0.5) * 3
-         }
-     )
+        {
+            x: (Math.random() - 0.5) * 3,
+            y: 3,
+            z: (Math.random() - 0.5) * 3
+        }
+    ),
+    reset: () => {
+        objectsToUpdate.forEach(object => {
+            object.body.removeEventListener('collide', playHitSound)
+            world.removeBody(object.body)
+
+            scene.remove(object.mesh)
+        })
+
+        objectsToUpdate.splice(0, objectsToUpdate.length)
+    }
 }
 
 gui.add(debugObject, 'createSphere')
 gui.add(debugObject, 'createBox')
+gui.add(debugObject, 'reset')
 
 /**
  * Base
@@ -58,9 +69,27 @@ const environmentMapTexture = cubeTextureLoader.load([
 ])
 
 /**
+ * Sounds
+ */
+const hitSound = new Audio('/sounds/hit.mp3')
+
+const playHitSound = (collision) => {
+
+    const impactStrength = collision.contact.getImpactVelocityAlongNormal()
+
+    if (impactStrength > 1.5) {
+        hitSound.volume = Math.random()
+        hitSound.currentTime = 0
+        hitSound.play()
+    }
+}
+
+/**
  * Physics
  */
 const world = new CANNON.World()
+world.allowSleep = true
+world.broadphase = new CANNON.SAPBroadphase(world)
 world.gravity.set(0, -9.82, 0)
 
 const defaultMaterial = new CANNON.Material('default')
@@ -185,7 +214,6 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
 const createSphere = (radius, position) => {
     const mesh = new THREE.Mesh(sphereGeometry, sphereMaterial)
     mesh.scale.set(radius, radius, radius)
-
     mesh.castShadow = true
     mesh.position.copy(position)
     scene.add(mesh)
@@ -204,6 +232,8 @@ const createSphere = (radius, position) => {
         mesh,
         body,
     })
+
+    body.addEventListener('collide', playHitSound)
 }
 
 const boxGeometry = new THREE.BoxBufferGeometry(1, 1, 1)
@@ -235,6 +265,8 @@ const createBox = (width, height, depth, position) => {
         mesh,
         body,
     })
+
+    body.addEventListener('collide', playHitSound)
 }
 
 createSphere(0.5, { x: 0, y: 3, z: 0 })
