@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'lil-gui'
+import { PCFSoftShadowMap } from 'three'
 
 /**
  * Loaders
@@ -30,6 +31,10 @@ const updateAllMaterialEnvironmentMaps = () => {
 
         if (isThreeMesh && hasStandardMaterial) {
             child.material.envMapIntensity = debugObject.envMapIntensity
+            child.material.needsUpdate = true
+
+            child.castShadow = true
+            child.receiveShadow = true
         }
     })
 }
@@ -85,7 +90,16 @@ gltfLoader.load(
  */
 const directionalLight = new THREE.DirectionalLight('white', 3)
 directionalLight.position.set(0.25, 3, -2.25)
+directionalLight.castShadow = true
+directionalLight.shadow.camera.far = 15
+directionalLight.shadow.mapSize.set(1024, 1024)
+directionalLight.shadow.normalBias = 0.5
+
 scene.add(directionalLight)
+
+
+// const directionalLightCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera)
+// scene.add(directionalLightCameraHelper)
 
 gui.add(directionalLight, 'intensity').min(0).max(10).step(0.001).name('lightIntensity')
 gui.add(directionalLight.position, 'x').min(-5).max(5).step(0.001).name('lightX')
@@ -131,14 +145,15 @@ controls.enableDamping = true
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    antialias: true // Activating MSAA
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 renderer.physicallyCorrectLights = true
-
 renderer.outputEncoding = THREE.sRGBEncoding
+
 debugObject.isRGBEncoding = true
 
 gui.add(debugObject, 'isRGBEncoding').onChange(() => {
@@ -147,6 +162,22 @@ gui.add(debugObject, 'isRGBEncoding').onChange(() => {
     else
         renderer.outputEncoding = THREE.LinearEncoding
 })
+
+renderer.toneMapping = THREE.ReinhardToneMapping
+renderer.toneMappingExposure = 5
+
+gui.add(renderer, 'toneMapping', {
+    No: THREE.NoToneMapping,
+    Linear: THREE.LinearToneMapping,
+    Reinhard: THREE.ReinhardToneMapping,
+    Cineon: THREE.CineonToneMapping,
+    ACESFilmic: THREE.ACESFilmicToneMapping
+}).onFinishChange(updateAllMaterialEnvironmentMaps)
+
+gui.add(renderer, 'toneMappingExposure').min(0).max(10).step(0.001)
+
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
 /**
  * Animate
